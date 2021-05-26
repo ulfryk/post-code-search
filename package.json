@@ -1,0 +1,18 @@
+{
+  "name": "post-code-search",
+  "version": "1.0.0",
+  "repository": "git@github.com:ulfryk/post-code-search.git",
+  "author": "Ulfryk <ulfryk@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": " elm-live src/Main.elm -u -- --output=dist/main.js"
+  },
+  "dependencies": {
+    "elm": "^0.19.1-5",
+    "elm-format": "^0.8.5",
+    "elm-live": "^4.0.2"
+  },
+  "resolutions": {
+    "http-proxy": ">=1.18.1"
+  }
+}
