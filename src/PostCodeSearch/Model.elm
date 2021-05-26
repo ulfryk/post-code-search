@@ -1,6 +1,16 @@
 module PostCodeSearch.Model exposing (..)
 
-type alias Model = { version : Int }
+import Browser.Navigation as Nav
+import Url
 
-initialState : Model
-initialState = { version = 1 }
+
+type alias Model =
+    { version : Int
+    , key : Nav.Key
+    , url : Url.Url
+    }
+
+
+initialState : Url.Url -> Nav.Key -> Model
+initialState url key =
+    { version = 1, key = key, url = url }
