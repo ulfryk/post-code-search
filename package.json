@@ -5,7 +5,8 @@
   "author": "Ulfryk <ulfryk@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": " elm-live src/Main.elm -u -- --output=dist/main.js"
+    "start": "elm-live src/Main.elm -u -- --output=dist/main.js",
+    "build": "elm make src/Main.elm --output=dist/main.js"
   },
   "dependencies": {
     "elm": "^0.19.1-5",
