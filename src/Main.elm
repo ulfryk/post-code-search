@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import PostCode.Client exposing (getPostCode)
+import PostCode.Client exposing (getNearest, getPostCode)
 import PostCodeSearch.LayoutHtml exposing (layoutHtml)
 import PostCodeSearch.Model exposing (Model, initialState, pathToCode)
 import PostCodeSearch.Msg exposing (Msg(..))
@@ -28,7 +28,10 @@ init flags url key =
     ( initialState url key
     , case pathToCode url.path of
         Just code ->
-            Cmd.map Api <| getPostCode code
+            Cmd.batch
+                [ Cmd.map Api <| getPostCode code
+                , Cmd.map Api <| getNearest code
+                ]
 
         Nothing ->
             Cmd.none

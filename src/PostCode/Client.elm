@@ -27,3 +27,11 @@ getAutocomplete part =
         { url = apiUrlBase ++ part ++ "/autocomplete"
         , expect = Http.expectJson (GotSuggestions << map getValidResult) <| validResponseDecoder (D.list D.string) []
         }
+
+
+getNearest : String -> Cmd ApiMsg
+getNearest part =
+    Http.get
+        { url = apiUrlBase ++ part ++ "/nearest"
+        , expect = Http.expectJson (GotNearest << map getValidResult) <| validResponseDecoder (D.list postCodeDecoder) []
+        }

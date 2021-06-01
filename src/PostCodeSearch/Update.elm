@@ -3,7 +3,7 @@ module PostCodeSearch.Update exposing (..)
 import Browser
 import Browser.Navigation as Nav
 import PostCode.ApiMsg exposing (ApiMsg(..))
-import PostCode.Client exposing (getAutocomplete, getPostCode)
+import PostCode.Client exposing (getAutocomplete, getNearest, getPostCode)
 import PostCodeSearch.Model exposing (Model)
 import PostCodeSearch.Msg exposing (Msg(..))
 import String exposing (isEmpty)
@@ -41,14 +41,12 @@ update msg model =
             , Cmd.batch
                 [ Nav.pushUrl model.key ("/post-code-search/" ++ code)
                 , Cmd.map Api <| getPostCode code
+                , Cmd.map Api <| getNearest code
                 ]
             )
 
         Api apiMsg ->
             case apiMsg of
-                Noop ->
-                    ( model, Cmd.none )
-
                 GotCode result ->
                     case result of
                         Ok value ->
@@ -90,3 +88,11 @@ update msg model =
                               }
                             , Cmd.none
                             )
+
+                GotNearest result ->
+                    case result of
+                        Ok value ->
+                            ( { model | nearest = Just value }, Cmd.none )
+
+                        _ ->
+                            ( { model | nearest = Just [] }, Cmd.none )

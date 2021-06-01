@@ -5345,8 +5345,9 @@ var $elm$browser$Browser$application = _Browser_application;
 var $author$project$PostCodeSearch$Msg$Api = function (a) {
 	return {$: 'Api', a: a};
 };
-var $author$project$PostCode$ApiMsg$GotCode = function (a) {
-	return {$: 'GotCode', a: a};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $author$project$PostCode$ApiMsg$GotNearest = function (a) {
+	return {$: 'GotNearest', a: a};
 };
 var $author$project$PostCode$Client$apiUrlBase = 'https://postcodes.io/postcodes/';
 var $elm$core$Basics$composeL = F3(
@@ -6144,6 +6145,7 @@ var $elm$http$Http$get = function (r) {
 var $author$project$PostCode$DTO$ValidResponse$getValidResult = function (response) {
 	return response.result;
 };
+var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -6250,6 +6252,25 @@ var $author$project$PostCode$DTO$ValidResponse$validResponseDecoder = F2(
 				$elm$json$Json$Decode$int,
 				$elm$json$Json$Decode$succeed($author$project$PostCode$DTO$ValidResponse$ValidResponse)));
 	});
+var $author$project$PostCode$Client$getNearest = function (part) {
+	return $elm$http$Http$get(
+		{
+			expect: A2(
+				$elm$http$Http$expectJson,
+				A2(
+					$elm$core$Basics$composeL,
+					$author$project$PostCode$ApiMsg$GotNearest,
+					$elm$core$Result$map($author$project$PostCode$DTO$ValidResponse$getValidResult)),
+				A2(
+					$author$project$PostCode$DTO$ValidResponse$validResponseDecoder,
+					$elm$json$Json$Decode$list($author$project$PostCode$DTO$PostCode$postCodeDecoder),
+					_List_Nil)),
+			url: $author$project$PostCode$Client$apiUrlBase + (part + '/nearest')
+		});
+};
+var $author$project$PostCode$ApiMsg$GotCode = function (a) {
+	return {$: 'GotCode', a: a};
+};
 var $author$project$PostCode$Client$getPostCode = function (code) {
 	return $elm$http$Http$get(
 		{
@@ -6377,7 +6398,6 @@ var $author$project$PostCodeSearch$Model$initialState = F2(
 		};
 	});
 var $elm$core$Platform$Cmd$map = _Platform_map;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = F3(
 	function (flags, url, key) {
@@ -6387,10 +6407,18 @@ var $author$project$Main$init = F3(
 				var _v0 = $author$project$PostCodeSearch$Model$pathToCode(url.path);
 				if (_v0.$ === 'Just') {
 					var code = _v0.a;
-					return A2(
-						$elm$core$Platform$Cmd$map,
-						$author$project$PostCodeSearch$Msg$Api,
-						$author$project$PostCode$Client$getPostCode(code));
+					return $elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								A2(
+								$elm$core$Platform$Cmd$map,
+								$author$project$PostCodeSearch$Msg$Api,
+								$author$project$PostCode$Client$getPostCode(code)),
+								A2(
+								$elm$core$Platform$Cmd$map,
+								$author$project$PostCodeSearch$Msg$Api,
+								$author$project$PostCode$Client$getNearest(code))
+							]));
 				} else {
 					return $elm$core$Platform$Cmd$none;
 				}
@@ -6404,7 +6432,6 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$PostCode$ApiMsg$GotSuggestions = function (a) {
 	return {$: 'GotSuggestions', a: a};
 };
-var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$PostCode$Client$getAutocomplete = function (part) {
 	return $elm$http$Http$get(
 		{
@@ -6518,13 +6545,15 @@ var $author$project$PostCodeSearch$Update$update = F2(
 								A2(
 								$elm$core$Platform$Cmd$map,
 								$author$project$PostCodeSearch$Msg$Api,
-								$author$project$PostCode$Client$getPostCode(code))
+								$author$project$PostCode$Client$getPostCode(code)),
+								A2(
+								$elm$core$Platform$Cmd$map,
+								$author$project$PostCodeSearch$Msg$Api,
+								$author$project$PostCode$Client$getNearest(code))
 							])));
 			default:
 				var apiMsg = msg.a;
 				switch (apiMsg.$) {
-					case 'Noop':
-						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					case 'GotCode':
 						var result = apiMsg.a;
 						if (result.$ === 'Ok') {
@@ -6547,7 +6576,7 @@ var $author$project$PostCodeSearch$Update$update = F2(
 									}),
 								$elm$core$Platform$Cmd$none);
 						}
-					default:
+					case 'GotSuggestions':
 						var result = apiMsg.a;
 						if (result.$ === 'Ok') {
 							var value = result.a;
@@ -6566,6 +6595,26 @@ var $author$project$PostCodeSearch$Update$update = F2(
 								_Utils_update(
 									model,
 									{autocomplete: $elm$core$Maybe$Nothing, autocompleteLoading: false, error: $elm$core$Maybe$Nothing}),
+								$elm$core$Platform$Cmd$none);
+						}
+					default:
+						var result = apiMsg.a;
+						if (result.$ === 'Ok') {
+							var value = result.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										nearest: $elm$core$Maybe$Just(value)
+									}),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										nearest: $elm$core$Maybe$Just(_List_Nil)
+									}),
 								$elm$core$Platform$Cmd$none);
 						}
 				}
@@ -6762,8 +6811,59 @@ var $author$project$PostCodeSearch$View$postCodeInfoView = F2(
 			return loading ? $elm$html$Html$text('loading…') : $author$project$Common$HtmlNone$htmlNone;
 		}
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$small = _VirtualDom_node('small');
+var $author$project$PostCodeSearch$View$postCodeFullInfo = function (pc) {
+	var postcode = pc.postcode;
+	return A2(
+		$elm$html$Html$li,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$strong,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(postcode)
+					])),
+				$elm$html$Html$text(' '),
+				A2(
+				$elm$html$Html$small,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						' ( ' + ($author$project$PostCodeSearch$View$postCodeInfo(pc) + ' ) '))
+					]))
+			]));
+};
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$PostCodeSearch$View$showNearest = function (nearest) {
+	if (nearest.$ === 'Just') {
+		var n = nearest.a;
+		return $elm$core$List$isEmpty(n) ? A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('No nearest found.')
+				])) : A2(
+			$elm$html$Html$ul,
+			_List_Nil,
+			A2($elm$core$List$map, $author$project$PostCodeSearch$View$postCodeFullInfo, n));
+	} else {
+		return $author$project$Common$HtmlNone$htmlNone;
+	}
+};
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -6794,13 +6894,6 @@ var $author$project$Common$AutocompleteSuggestions$autocompleteSuggestion = F2(
 						]))
 				]));
 	});
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $author$project$Common$AutocompleteSuggestions$loadingMsg = F2(
 	function (loading, content) {
 		return loading ? A2(
@@ -6850,7 +6943,6 @@ var $author$project$Common$AutocompleteSuggestions$loadingMsg = F2(
 				}()
 				]));
 	});
-var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Common$AutocompleteSuggestions$autocompleteList = F3(
 	function (loading, autocomplete, action) {
 		if (autocomplete.$ === 'Just') {
@@ -6942,6 +7034,7 @@ var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
 	var loading = model.loading;
 	var autocomplete = model.autocomplete;
 	var autocompleteLoading = model.autocompleteLoading;
+	var nearest = model.nearest;
 	return A2(
 		$elm$html$Html$main_,
 		_List_fromArray(
@@ -6963,12 +7056,9 @@ var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('three columns')
+								$elm$html$Html$Attributes$class('two columns')
 							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(' ')
-							])),
+						_List_Nil),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -6983,21 +7073,11 @@ var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('three columns')
+								$elm$html$Html$Attributes$class('five columns')
 							]),
 						_List_fromArray(
 							[
 								A2($author$project$PostCodeSearch$View$postCodeInfoView, found, loading)
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('one column')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(' ')
 							]))
 					])),
 				A2(
@@ -7012,12 +7092,9 @@ var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('three columns')
+								$elm$html$Html$Attributes$class('two columns')
 							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(' ')
-							])),
+						_List_Nil),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
@@ -7034,11 +7111,11 @@ var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('four columns')
+								$elm$html$Html$Attributes$class('five columns')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(' ')
+								$author$project$PostCodeSearch$View$showNearest(nearest)
 							]))
 					]))
 			]));

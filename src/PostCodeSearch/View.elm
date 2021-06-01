@@ -3,8 +3,9 @@ module PostCodeSearch.View exposing (..)
 import Common.AutocompleteSuggestions exposing (autocompleteList)
 import Common.ErrorInfoHtml exposing (errorInfo)
 import Common.HtmlNone exposing (htmlNone)
-import Html exposing (Html, div, main_, p, strong, text)
+import Html exposing (Html, div, li, main_, p, small, strong, text, ul)
 import Html.Attributes exposing (class, style)
+import List exposing (isEmpty)
 import Maybe
 import PostCode.DTO.PostCode exposing (PostCode)
 import PostCodeSearch.CodeInputHtml exposing (codeInput)
@@ -15,10 +16,10 @@ import PostCodeSearch.Msg exposing (Msg(..))
 postCodeInfo : PostCode -> String
 postCodeInfo { region, country } =
     case region of
-        Maybe.Just r ->
+        Just r ->
             r ++ ", " ++ country
 
-        Maybe.Nothing ->
+        Nothing ->
             country
 
 
@@ -41,6 +42,15 @@ postCodeInfoView found loading =
                 htmlNone
 
 
+postCodeFullInfo : PostCode -> Html msg
+postCodeFullInfo ({ postcode } as pc) =
+    li []
+        [ strong [] [ text postcode ]
+        , text " "
+        , small [] [ text <| " ( " ++ postCodeInfo pc ++ " ) " ]
+        ]
+
+
 subInputView : Model -> Html Msg
 subInputView { error, autocomplete, autocompleteLoading } =
     case error of
@@ -51,8 +61,22 @@ subInputView { error, autocomplete, autocompleteLoading } =
             div [ class "sub-input-info__hints" ] [ autocompleteList autocompleteLoading autocomplete SubmitCode ]
 
 
+showNearest : Maybe (List PostCode) -> Html msg
+showNearest nearest =
+    case nearest of
+        Just n ->
+            if isEmpty n then
+                p [] [ text "No nearest found." ]
+
+            else
+                ul [] <| List.map postCodeFullInfo n
+
+        Nothing ->
+            htmlNone
+
+
 postCodeSearchView : Model -> Html Msg
-postCodeSearchView ({ code, error, found, loading, autocomplete, autocompleteLoading } as model) =
+postCodeSearchView ({ code, error, found, loading, autocomplete, autocompleteLoading, nearest } as model) =
     main_
         [ if loading then
             class "postcode-search-form--loading"
@@ -62,14 +86,13 @@ postCodeSearchView ({ code, error, found, loading, autocomplete, autocompleteLoa
         , class "postcode-search-form"
         ]
         [ div [ class "row" ]
-            [ div [ class "three columns" ] [ text " " ]
+            [ div [ class "two columns" ] []
             , div [ class "five columns" ] [ codeInput loading code ]
-            , div [ class "three columns" ] [ postCodeInfoView found loading ]
-            , div [ class "one column" ] [ text " " ]
+            , div [ class "five columns" ] [ postCodeInfoView found loading ]
             ]
         , div [ class "row" ]
-            [ div [ class "three columns" ] [ text " " ]
+            [ div [ class "two columns" ] []
             , div [ class "five columns", class "postcode-search-form__sub-input", class "sub-input-info" ] [ subInputView model ]
-            , div [ class "four columns" ] [ text " " ]
+            , div [ class "five columns" ] [ showNearest nearest ]
             ]
         ]
