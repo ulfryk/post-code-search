@@ -6457,7 +6457,7 @@ var $author$project$PostCodeSearch$Update$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
-								A2($elm$browser$Browser$Navigation$pushUrl, model.key, '/' + code),
+								A2($elm$browser$Browser$Navigation$pushUrl, model.key, '/post-code-search/' + code),
 								A2(
 								$elm$core$Platform$Cmd$map,
 								$author$project$PostCodeSearch$Msg$Api,
