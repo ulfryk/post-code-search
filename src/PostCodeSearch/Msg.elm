@@ -7,7 +7,7 @@ import Url
 
 type Msg
     = DoNothing
-    | LinkClicked Browser.UrlRequest
+    | UrlChangeRequested Browser.UrlRequest
     | UrlChanged Url.Url
     | UpdateCode String
     | SubmitCode String

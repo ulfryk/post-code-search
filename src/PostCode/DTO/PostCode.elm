@@ -5,7 +5,7 @@ import Json.Decode.Pipeline exposing (required)
 
 
 type alias PostCode =
-    { postCode : String
+    { postcode : String
     , country : String
     , region : String
     }
@@ -14,6 +14,6 @@ type alias PostCode =
 postCodeDecoder : Decoder PostCode
 postCodeDecoder =
     D.succeed PostCode
-        |> required "postCode" D.string
+        |> required "postcode" D.string
         |> required "country" D.string
         |> required "region" D.string

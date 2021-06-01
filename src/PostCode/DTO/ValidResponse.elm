@@ -16,5 +16,7 @@ validResponseDecoder decoder =
         |> required "status" D.int
         |> required "result" decoder
 
+
 getValidResult : ValidResponse t -> t
-getValidResult response = response.result
+getValidResult response =
+    response.result

@@ -3,7 +3,8 @@ module Main exposing (..)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, footer, h1, header, text)
-import PostCodeSearch.Model exposing (Model, initialState)
+import PostCode.Client exposing (getPostCode)
+import PostCodeSearch.Model exposing (Model, initialCode, initialState)
 import PostCodeSearch.Msg exposing (Msg(..))
 import PostCodeSearch.Update exposing (update)
 import PostCodeSearch.View exposing (postCodeSearchView)
@@ -18,13 +19,20 @@ main =
         , update = update
         , subscriptions = subscriptions
         , onUrlChange = UrlChanged
-        , onUrlRequest = LinkClicked
+        , onUrlRequest = UrlChangeRequested
         }
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( initialState url key, Cmd.none )
+    ( initialState url key
+    , case initialCode url of
+        Just code ->
+            Cmd.map Api <| getPostCode code
+
+        Nothing ->
+            Cmd.none
+    )
 
 
 subscriptions : Model -> Sub Msg

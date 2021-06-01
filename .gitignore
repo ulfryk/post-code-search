@@ -81,7 +81,7 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# dist # not ignored for now to simplify build pipeline for gh-pages
 
 # Gatsby files
 .cache/

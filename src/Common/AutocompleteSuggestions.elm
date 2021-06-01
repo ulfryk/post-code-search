@@ -15,15 +15,24 @@ autocompleteSuggestion action suggestion =
         ]
 
 
-autocompleteList : Maybe (List String) -> (String -> msg) -> Html msg
-autocompleteList autocomplete action =
+loadingMsg : Bool -> Html msg
+loadingMsg loading =
+    if loading then
+        li [] [ text "Loading…" ]
+
+    else
+        htmlNone
+
+
+autocompleteList : Bool -> Maybe (List String) -> (String -> msg) -> Html msg
+autocompleteList loading autocomplete action =
     case autocomplete of
         Just suggestions ->
             if isEmpty suggestions then
-                ul [] [ li [] [ text "Nothing found." ] ]
+                ul [] [ li [] [ loadingMsg loading, text "Nothing found." ] ]
 
             else
-                ul [] (map (autocompleteSuggestion action) suggestions)
+                ul [] ([ loadingMsg loading ] ++ map (autocompleteSuggestion action) suggestions)
 
         Nothing ->
             htmlNone
