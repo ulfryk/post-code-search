@@ -37,7 +37,7 @@ update msg model =
             )
 
         SubmitCode code ->
-            ( { model | error = Nothing, loading = True }
+            ( { model | error = Nothing, code = code, loading = True }
             , Cmd.batch
                 [ Nav.pushUrl model.key ("/post-code-search/" ++ code)
                 , Cmd.map Api <| getPostCode code

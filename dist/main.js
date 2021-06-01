@@ -6453,7 +6453,7 @@ var $author$project$PostCodeSearch$Update$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{error: $elm$core$Maybe$Nothing, loading: true}),
+						{code: code, error: $elm$core$Maybe$Nothing, loading: true}),
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
