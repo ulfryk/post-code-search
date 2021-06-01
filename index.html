@@ -27,7 +27,67 @@
         }(window.location))
     </script>
     <!-- End Single Page Apps for GitHub Pages -->
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" integrity="sha512-EZLkOqwILORob+p0BXZc+Vm3RgJBOe1Iq/0fiI7r/wJgzOFZMlsqTa29UEl6v6U6gsV4uIpsNZoV32YZqrCRCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .columns:first-child:before {
+            content: "\00a0";
+        }
+        .header {}
+        .header__title {
+            text-align: center;
+        }
+        .footer {
+            bottom: 0;
+            left: 0;
+            position: fixed;
+            right: 0;
+            text-align: center;
+        }
+        .postcode-search-form { transition: opacity .3s ease }
+        .postcode-search-form--loading { opacity: .5 }
+        .postcode-search-form--loaded { opacity: 1 }
+        .postcode-search-form__sub-input {
+            min-height: 20px;
+        }
+        .the-one-and-only-input {
+            width: 80%;
+        }
+        .sub-input-info {
+            position: relative;
+        }
+        .sub-input-info__error,
+        .sub-input-info__hints {
+            right: 0;
+            position: absolute;
+            top: 0;
+        }
+        .sub-input-info__hints {
+            top: -15px;
+            width: 80%;
+        }
+        .postcode-search-form__found {}
+        .postcode-details {}
+        .autocomplete {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+        .autocomplete--empty {}
+        .autocomplete__suggestion {
+            margin: 0;
+            padding: 0;
+        }
+        .autocomplete__suggestion--info {
+            opacity: .6;
+        }
+        .autocomplete__choose-suggestion {
+            width: 100%;
+            line-height: 32px;
+            margin: 0;
+            border-top: 0;
+            border-radius: 0;
+        }
+    </style>
     <script src="dist/main.js"></script>
 </head>
 <body>

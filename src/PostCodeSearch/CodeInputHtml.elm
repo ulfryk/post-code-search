@@ -2,7 +2,7 @@ module PostCodeSearch.CodeInputHtml exposing (..)
 
 import Common.EventHandlers exposing (onKeyDown)
 import Html exposing (Attribute, Html, input)
-import Html.Attributes exposing (disabled, placeholder, type_, value)
+import Html.Attributes exposing (class, disabled, placeholder, type_, value)
 import Html.Events exposing (keyCode, on, onInput)
 import PostCodeSearch.Msg exposing (Msg(..))
 
@@ -20,7 +20,9 @@ submitOnEnter postCode keyCode =
 codeInput : Bool ->String -> Html Msg
 codeInput loading code =
     input
-        [ type_ "text"
+        [ class "u-pull-right"
+        , class "the-one-and-only-input"
+        , type_ "text"
         , placeholder "POST CODE"
         , value code
         , onInput UpdateCode

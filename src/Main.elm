@@ -2,8 +2,8 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, footer, h1, header, text)
 import PostCode.Client exposing (getPostCode)
+import PostCodeSearch.LayoutHtml exposing (layoutHtml)
 import PostCodeSearch.Model exposing (Model, initialState, pathToCode)
 import PostCodeSearch.Msg exposing (Msg(..))
 import PostCodeSearch.Update exposing (update)
@@ -40,12 +40,18 @@ subscriptions model =
     Sub.none
 
 
+theTitle : Model -> String
+theTitle { found } =
+    case found of
+        Just { postcode } ->
+            "Post Code Search - " ++ postcode
+
+        Nothing ->
+            "Post Code Search"
+
+
 view : Model -> Browser.Document Msg
 view ({ url, key, code } as model) =
-    { title = "URL Interceptor"
-    , body =
-        [ header [] [ h1 [] [ text "Post Code Search " ] ]
-        , postCodeSearchView model
-        , footer [] [ text "© Ulfryk 2021" ]
-        ]
+    { title = theTitle model
+    , body = [ layoutHtml << postCodeSearchView <| model ]
     }

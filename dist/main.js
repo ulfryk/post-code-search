@@ -6161,6 +6161,55 @@ var $author$project$PostCode$DTO$PostCode$PostCode = F3(
 	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
 		return A2(
@@ -6169,10 +6218,11 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			decoder);
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$PostCode$DTO$PostCode$postCodeDecoder = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+var $author$project$PostCode$DTO$PostCode$postCodeDecoder = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'region',
-	$elm$json$Json$Decode$string,
+	A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$string),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 		'country',
@@ -6187,17 +6237,19 @@ var $author$project$PostCode$DTO$ValidResponse$ValidResponse = F2(
 		return {result: result, status: status};
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$PostCode$DTO$ValidResponse$validResponseDecoder = function (decoder) {
-	return A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'result',
-		decoder,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'status',
-			$elm$json$Json$Decode$int,
-			$elm$json$Json$Decode$succeed($author$project$PostCode$DTO$ValidResponse$ValidResponse)));
-};
+var $author$project$PostCode$DTO$ValidResponse$validResponseDecoder = F2(
+	function (decoder, res) {
+		return A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			'result',
+			decoder,
+			res,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'status',
+				$elm$json$Json$Decode$int,
+				$elm$json$Json$Decode$succeed($author$project$PostCode$DTO$ValidResponse$ValidResponse)));
+	});
 var $author$project$PostCode$Client$getPostCode = function (code) {
 	return $elm$http$Http$get(
 		{
@@ -6207,7 +6259,10 @@ var $author$project$PostCode$Client$getPostCode = function (code) {
 					$elm$core$Basics$composeL,
 					$author$project$PostCode$ApiMsg$GotCode,
 					$elm$core$Result$map($author$project$PostCode$DTO$ValidResponse$getValidResult)),
-				$author$project$PostCode$DTO$ValidResponse$validResponseDecoder($author$project$PostCode$DTO$PostCode$postCodeDecoder)),
+				A2(
+					$author$project$PostCode$DTO$ValidResponse$validResponseDecoder,
+					A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $author$project$PostCode$DTO$PostCode$postCodeDecoder),
+					$elm$core$Maybe$Nothing)),
 			url: _Utils_ap($author$project$PostCode$Client$apiUrlBase, code)
 		});
 };
@@ -6359,8 +6414,10 @@ var $author$project$PostCode$Client$getAutocomplete = function (part) {
 					$elm$core$Basics$composeL,
 					$author$project$PostCode$ApiMsg$GotSuggestions,
 					$elm$core$Result$map($author$project$PostCode$DTO$ValidResponse$getValidResult)),
-				$author$project$PostCode$DTO$ValidResponse$validResponseDecoder(
-					$elm$json$Json$Decode$list($elm$json$Json$Decode$string))),
+				A2(
+					$author$project$PostCode$DTO$ValidResponse$validResponseDecoder,
+					$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+					_List_Nil)),
 			url: $author$project$PostCode$Client$apiUrlBase + (part + '/autocomplete')
 		});
 };
@@ -6475,12 +6532,7 @@ var $author$project$PostCodeSearch$Update$update = F2(
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
-									{
-										autocomplete: $elm$core$Maybe$Nothing,
-										error: $elm$core$Maybe$Nothing,
-										found: $elm$core$Maybe$Just(value),
-										loading: false
-									}),
+									{autocomplete: $elm$core$Maybe$Nothing, error: $elm$core$Maybe$Nothing, found: value, loading: false}),
 								$elm$core$Platform$Cmd$none);
 						} else {
 							var error = result.a;
@@ -6519,105 +6571,6 @@ var $author$project$PostCodeSearch$Update$update = F2(
 				}
 		}
 	});
-var $elm$html$Html$footer = _VirtualDom_node('footer');
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$html$Html$header = _VirtualDom_node('header');
-var $author$project$PostCodeSearch$Msg$SubmitCode = function (a) {
-	return {$: 'SubmitCode', a: a};
-};
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$li = _VirtualDom_node('li');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Common$AutocompleteSuggestions$autocompleteSuggestion = F2(
-	function (action, suggestion) {
-		return A2(
-			$elm$html$Html$li,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							action(suggestion))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(suggestion)
-						]))
-				]));
-	});
-var $author$project$Common$HtmlNone$htmlNone = $elm$html$Html$text('');
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $author$project$Common$AutocompleteSuggestions$loadingMsg = function (loading) {
-	return loading ? A2(
-		$elm$html$Html$li,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text('Loading…')
-			])) : $author$project$Common$HtmlNone$htmlNone;
-};
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$Common$AutocompleteSuggestions$autocompleteList = F3(
-	function (loading, autocomplete, action) {
-		if (autocomplete.$ === 'Just') {
-			var suggestions = autocomplete.a;
-			return $elm$core$List$isEmpty(suggestions) ? A2(
-				$elm$html$Html$ul,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$li,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$author$project$Common$AutocompleteSuggestions$loadingMsg(loading),
-								$elm$html$Html$text('Nothing found.')
-							]))
-					])) : A2(
-				$elm$html$Html$ul,
-				_List_Nil,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$author$project$Common$AutocompleteSuggestions$loadingMsg(loading)
-						]),
-					A2(
-						$elm$core$List$map,
-						$author$project$Common$AutocompleteSuggestions$autocompleteSuggestion(action),
-						suggestions)));
-		} else {
-			return $author$project$Common$HtmlNone$htmlNone;
-		}
-	});
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6627,6 +6580,53 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$footer = _VirtualDom_node('footer');
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$header = _VirtualDom_node('header');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$PostCodeSearch$LayoutHtml$layoutHtml = function (content) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('container')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$header,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('header')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h1,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('header__title')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Post Code Search')
+							]))
+					])),
+				content,
+				A2(
+				$elm$html$Html$footer,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('footer')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('© Ulfryk 2021')
+					]))
+			]));
+};
 var $author$project$PostCodeSearch$Msg$UpdateCode = function (a) {
 	return {$: 'UpdateCode', a: a};
 };
@@ -6646,6 +6646,7 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -6672,6 +6673,16 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Events$keyCode = A2($elm$json$Json$Decode$field, 'keyCode', $elm$json$Json$Decode$int);
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
 var $author$project$Common$EventHandlers$onKeyDown = function (tagger) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -6680,6 +6691,9 @@ var $author$project$Common$EventHandlers$onKeyDown = function (tagger) {
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $author$project$PostCodeSearch$Msg$DoNothing = {$: 'DoNothing'};
+var $author$project$PostCodeSearch$Msg$SubmitCode = function (a) {
+	return {$: 'SubmitCode', a: a};
+};
 var $author$project$PostCodeSearch$CodeInputHtml$submitOnEnter = F2(
 	function (postCode, keyCode) {
 		if (keyCode === 13) {
@@ -6696,6 +6710,8 @@ var $author$project$PostCodeSearch$CodeInputHtml$codeInput = F2(
 			$elm$html$Html$input,
 			_List_fromArray(
 				[
+					$elm$html$Html$Attributes$class('u-pull-right'),
+					$elm$html$Html$Attributes$class('the-one-and-only-input'),
 					$elm$html$Html$Attributes$type_('text'),
 					$elm$html$Html$Attributes$placeholder('POST CODE'),
 					$elm$html$Html$Attributes$value(code),
@@ -6705,6 +6721,172 @@ var $author$project$PostCodeSearch$CodeInputHtml$codeInput = F2(
 					$author$project$PostCodeSearch$CodeInputHtml$submitOnEnter(code))
 				]),
 			_List_Nil);
+	});
+var $elm$html$Html$main_ = _VirtualDom_node('main');
+var $author$project$Common$HtmlNone$htmlNone = $elm$html$Html$text('');
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $author$project$PostCodeSearch$View$postCodeInfo = function (_v0) {
+	var region = _v0.region;
+	var country = _v0.country;
+	if (region.$ === 'Just') {
+		var r = region.a;
+		return r + (', ' + country);
+	} else {
+		return country;
+	}
+};
+var $elm$html$Html$strong = _VirtualDom_node('strong');
+var $author$project$PostCodeSearch$View$postCodeInfoView = F2(
+	function (found, loading) {
+		if (found.$ === 'Just') {
+			var data = found.a;
+			return A2(
+				$elm$html$Html$p,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('postcode-search-form__found'),
+						$elm$html$Html$Attributes$class('postcode-details')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$strong,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								$author$project$PostCodeSearch$View$postCodeInfo(data))
+							]))
+					]));
+		} else {
+			return loading ? $elm$html$Html$text('loading…') : $author$project$Common$HtmlNone$htmlNone;
+		}
+	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Common$AutocompleteSuggestions$autocompleteSuggestion = F2(
+	function (action, suggestion) {
+		return A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('autocomplete__suggestion')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(
+							action(suggestion)),
+							$elm$html$Html$Attributes$class('autocomplete__choose-suggestion')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(suggestion)
+						]))
+				]));
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Common$AutocompleteSuggestions$loadingMsg = F2(
+	function (loading, content) {
+		return loading ? A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('autocomplete__suggestion'),
+					$elm$html$Html$Attributes$class('autocomplete__suggestion--info')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$disabled(true),
+							$elm$html$Html$Attributes$class('autocomplete__choose-suggestion')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Loading…')
+						]))
+				])) : A2(
+			$elm$html$Html$li,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('autocomplete__suggestion'),
+					$elm$html$Html$Attributes$class('autocomplete__suggestion--info')
+				]),
+			_List_fromArray(
+				[
+					function () {
+					if (content.$ === 'Just') {
+						var c = content.a;
+						return A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$disabled(true),
+									$elm$html$Html$Attributes$class('autocomplete__choose-suggestion')
+								]),
+							_List_fromArray(
+								[c]));
+					} else {
+						return $author$project$Common$HtmlNone$htmlNone;
+					}
+				}()
+				]));
+	});
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Common$AutocompleteSuggestions$autocompleteList = F3(
+	function (loading, autocomplete, action) {
+		if (autocomplete.$ === 'Just') {
+			var suggestions = autocomplete.a;
+			return $elm$core$List$isEmpty(suggestions) ? A2(
+				$elm$html$Html$ul,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('autocomplete'),
+						$elm$html$Html$Attributes$class('autocomplete--empty')
+					]),
+				_List_fromArray(
+					[
+						A3(
+						$elm$core$Basics$composeL,
+						$author$project$Common$AutocompleteSuggestions$loadingMsg(loading),
+						$elm$core$Maybe$Just,
+						$elm$html$Html$text('Nothing found.'))
+					])) : A2(
+				$elm$html$Html$ul,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('autocomplete')
+					]),
+				_Utils_ap(
+					_List_fromArray(
+						[
+							A2($author$project$Common$AutocompleteSuggestions$loadingMsg, loading, $elm$core$Maybe$Nothing)
+						]),
+					A2(
+						$elm$core$List$map,
+						$author$project$Common$AutocompleteSuggestions$autocompleteSuggestion(action),
+						suggestions)));
+		} else {
+			return $author$project$Common$HtmlNone$htmlNone;
+		}
 	});
 var $author$project$Common$ErrorInfoHtml$errorInfo = function (error) {
 	switch (error.$) {
@@ -6724,54 +6906,151 @@ var $author$project$Common$ErrorInfoHtml$errorInfo = function (error) {
 			return $elm$html$Html$text('Bad Body: ' + string);
 	}
 };
-var $elm$html$Html$main_ = _VirtualDom_node('main');
-var $elm$html$Html$strong = _VirtualDom_node('strong');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$PostCodeSearch$View$postCodeSearchView = function (_v0) {
-	var code = _v0.code;
+var $author$project$PostCodeSearch$View$subInputView = function (_v0) {
 	var error = _v0.error;
-	var found = _v0.found;
-	var loading = _v0.loading;
 	var autocomplete = _v0.autocomplete;
 	var autocompleteLoading = _v0.autocompleteLoading;
+	if (error.$ === 'Just') {
+		var err = error.a;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('sub-input-info__error')
+				]),
+			_List_fromArray(
+				[
+					$author$project$Common$ErrorInfoHtml$errorInfo(err)
+				]));
+	} else {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('sub-input-info__hints')
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$Common$AutocompleteSuggestions$autocompleteList, autocompleteLoading, autocomplete, $author$project$PostCodeSearch$Msg$SubmitCode)
+				]));
+	}
+};
+var $author$project$PostCodeSearch$View$postCodeSearchView = function (model) {
+	var code = model.code;
+	var error = model.error;
+	var found = model.found;
+	var loading = model.loading;
+	var autocomplete = model.autocomplete;
+	var autocompleteLoading = model.autocompleteLoading;
 	return A2(
 		$elm$html$Html$main_,
 		_List_fromArray(
 			[
-				loading ? $elm$html$Html$Attributes$class('postcode-search-form__loading') : $elm$html$Html$Attributes$class(''),
+				loading ? $elm$html$Html$Attributes$class('postcode-search-form--loading') : $elm$html$Html$Attributes$class('postcode-search-form--loaded'),
 				$elm$html$Html$Attributes$class('postcode-search-form')
 			]),
 		_List_fromArray(
 			[
-				A2($author$project$PostCodeSearch$CodeInputHtml$codeInput, loading, code),
-				function () {
-				if (found.$ === 'Just') {
-					var data = found.a;
-					return A2(
-						$elm$html$Html$strong,
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('row')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								A2($elm$html$Html$Attributes$style, 'margin-left', '10px')
+								$elm$html$Html$Attributes$class('three columns')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(data.region + (', ' + data.country))
-							]));
-				} else {
-					return loading ? $elm$html$Html$text('loading…') : $author$project$Common$HtmlNone$htmlNone;
-				}
-			}(),
-				A2($elm$html$Html$br, _List_Nil, _List_Nil),
-				function () {
-				if (error.$ === 'Just') {
-					var err = error.a;
-					return $author$project$Common$ErrorInfoHtml$errorInfo(err);
-				} else {
-					return A3($author$project$Common$AutocompleteSuggestions$autocompleteList, autocompleteLoading, autocomplete, $author$project$PostCodeSearch$Msg$SubmitCode);
-				}
-			}()
+								$elm$html$Html$text(' ')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('five columns')
+							]),
+						_List_fromArray(
+							[
+								A2($author$project$PostCodeSearch$CodeInputHtml$codeInput, loading, code)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('three columns')
+							]),
+						_List_fromArray(
+							[
+								A2($author$project$PostCodeSearch$View$postCodeInfoView, found, loading)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('one column')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(' ')
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('row')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('three columns')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(' ')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('five columns'),
+								$elm$html$Html$Attributes$class('postcode-search-form__sub-input'),
+								$elm$html$Html$Attributes$class('sub-input-info')
+							]),
+						_List_fromArray(
+							[
+								$author$project$PostCodeSearch$View$subInputView(model)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('four columns')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(' ')
+							]))
+					]))
 			]));
+};
+var $author$project$Main$theTitle = function (_v0) {
+	var found = _v0.found;
+	if (found.$ === 'Just') {
+		var postcode = found.a.postcode;
+		return 'Post Code Search - ' + postcode;
+	} else {
+		return 'Post Code Search';
+	}
 };
 var $author$project$Main$view = function (model) {
 	var url = model.url;
@@ -6780,29 +7059,9 @@ var $author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				A2(
-				$elm$html$Html$header,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h1,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Post Code Search ')
-							]))
-					])),
-				$author$project$PostCodeSearch$View$postCodeSearchView(model),
-				A2(
-				$elm$html$Html$footer,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('© Ulfryk 2021')
-					]))
+				A3($elm$core$Basics$composeL, $author$project$PostCodeSearch$LayoutHtml$layoutHtml, $author$project$PostCodeSearch$View$postCodeSearchView, model)
 			]),
-		title: 'URL Interceptor'
+		title: $author$project$Main$theTitle(model)
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$application(

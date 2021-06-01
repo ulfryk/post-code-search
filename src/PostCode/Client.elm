@@ -17,7 +17,7 @@ getPostCode : String -> Cmd ApiMsg
 getPostCode code =
     Http.get
         { url = apiUrlBase ++ code
-        , expect = Http.expectJson (GotCode << map getValidResult) <| validResponseDecoder postCodeDecoder
+        , expect = Http.expectJson (GotCode << map getValidResult) <| validResponseDecoder (D.map Just postCodeDecoder) Nothing
         }
 
 
@@ -25,5 +25,5 @@ getAutocomplete : String -> Cmd ApiMsg
 getAutocomplete part =
     Http.get
         { url = apiUrlBase ++ part ++ "/autocomplete"
-        , expect = Http.expectJson (GotSuggestions << map getValidResult) <| validResponseDecoder (D.list D.string)
+        , expect = Http.expectJson (GotSuggestions << map getValidResult) <| validResponseDecoder (D.list D.string) []
         }

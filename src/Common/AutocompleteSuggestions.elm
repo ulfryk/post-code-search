@@ -2,26 +2,34 @@ module Common.AutocompleteSuggestions exposing (..)
 
 import Common.HtmlNone exposing (htmlNone)
 import Html exposing (Html, button, li, text, ul)
+import Html.Attributes exposing (class, disabled)
 import Html.Events exposing (onClick)
 import List exposing (isEmpty, map)
 
 
 autocompleteSuggestion : (String -> msg) -> String -> Html msg
 autocompleteSuggestion action suggestion =
-    li []
-        [ button [ onClick (action suggestion) ]
-            [ text suggestion
-            ]
+    li [ class "autocomplete__suggestion" ]
+        [ button [ onClick (action suggestion), class "autocomplete__choose-suggestion" ] [ text suggestion ]
         ]
 
 
-loadingMsg : Bool -> Html msg
-loadingMsg loading =
+loadingMsg : Bool -> Maybe (Html msg) -> Html msg
+loadingMsg loading content =
     if loading then
-        li [] [ text "Loading…" ]
+        li [ class "autocomplete__suggestion", class "autocomplete__suggestion--info" ]
+            [ button [ disabled True, class "autocomplete__choose-suggestion" ] [ text "Loading…" ]
+            ]
 
     else
-        htmlNone
+        li [ class "autocomplete__suggestion", class "autocomplete__suggestion--info" ]
+            [ case content of
+                Just c ->
+                    button [ disabled True, class "autocomplete__choose-suggestion" ] [ c ]
+
+                Nothing ->
+                    htmlNone
+            ]
 
 
 autocompleteList : Bool -> Maybe (List String) -> (String -> msg) -> Html msg
@@ -29,10 +37,14 @@ autocompleteList loading autocomplete action =
     case autocomplete of
         Just suggestions ->
             if isEmpty suggestions then
-                ul [] [ li [] [ loadingMsg loading, text "Nothing found." ] ]
+                ul [ class "autocomplete", class "autocomplete--empty" ]
+                    [ loadingMsg loading << Just <| text "Nothing found." ]
 
             else
-                ul [] ([ loadingMsg loading ] ++ map (autocompleteSuggestion action) suggestions)
+                ul [ class "autocomplete" ]
+                    ([ loadingMsg loading Nothing ]
+                        ++ map (autocompleteSuggestion action) suggestions
+                    )
 
         Nothing ->
             htmlNone

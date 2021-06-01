@@ -53,7 +53,7 @@ update msg model =
                     case result of
                         Ok value ->
                             ( { model
-                                | found = Just value
+                                | found = value
                                 , error = Nothing
                                 , autocomplete = Nothing
                                 , loading = False

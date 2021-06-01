@@ -1,7 +1,7 @@
 module PostCode.DTO.ValidResponse exposing (..)
 
 import Json.Decode as D exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (optional, required)
 
 
 type alias ValidResponse t =
@@ -10,11 +10,11 @@ type alias ValidResponse t =
     }
 
 
-validResponseDecoder : Decoder t -> Decoder (ValidResponse t)
-validResponseDecoder decoder =
+validResponseDecoder : Decoder t -> t -> Decoder (ValidResponse t)
+validResponseDecoder decoder res =
     D.succeed ValidResponse
         |> required "status" D.int
-        |> required "result" decoder
+        |> optional "result" decoder res
 
 
 getValidResult : ValidResponse t -> t
