@@ -23,7 +23,7 @@ codeInput loading code =
         [ class "u-pull-right"
         , class "the-one-and-only-input"
         , type_ "text"
-        , placeholder "POST CODE"
+        , placeholder "type the code and press ⏎"
         , value code
         , onInput UpdateCode
         , disabled loading

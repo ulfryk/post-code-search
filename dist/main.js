@@ -6762,7 +6762,7 @@ var $author$project$PostCodeSearch$CodeInputHtml$codeInput = F2(
 					$elm$html$Html$Attributes$class('u-pull-right'),
 					$elm$html$Html$Attributes$class('the-one-and-only-input'),
 					$elm$html$Html$Attributes$type_('text'),
-					$elm$html$Html$Attributes$placeholder('POST CODE'),
+					$elm$html$Html$Attributes$placeholder('type the code and press ⏎'),
 					$elm$html$Html$Attributes$value(code),
 					$elm$html$Html$Events$onInput($author$project$PostCodeSearch$Msg$UpdateCode),
 					$elm$html$Html$Attributes$disabled(loading),
