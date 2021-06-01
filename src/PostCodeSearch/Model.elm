@@ -11,9 +11,10 @@ type alias Model =
     { key : Nav.Key
     , url : Url.Url
     , code : String
-    , autocomplete : Maybe (List String)
+    , autocomplete : Maybe (List PostCode)
     , found : Maybe PostCode
     , nearest : Maybe (List PostCode)
+    , error : Maybe String
     }
 
 
@@ -31,4 +32,5 @@ initialState url key =
     , autocomplete = Nothing
     , found = Nothing
     , nearest = Nothing
+    , error = Nothing
     }
