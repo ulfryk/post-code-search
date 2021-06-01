@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, footer, h1, header, text)
 import PostCode.Client exposing (getPostCode)
-import PostCodeSearch.Model exposing (Model, initialCode, initialState)
+import PostCodeSearch.Model exposing (Model, initialState, pathToCode)
 import PostCodeSearch.Msg exposing (Msg(..))
 import PostCodeSearch.Update exposing (update)
 import PostCodeSearch.View exposing (postCodeSearchView)
@@ -26,7 +26,7 @@ main =
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     ( initialState url key
-    , case initialCode url of
+    , case pathToCode url.path of
         Just code ->
             Cmd.map Api <| getPostCode code
 
