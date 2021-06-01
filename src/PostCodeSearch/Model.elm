@@ -1,13 +1,17 @@
 module PostCodeSearch.Model exposing (..)
 
 import Browser.Navigation as Nav
+import Common.Maybe exposing (mfilter)
 import Http
 import List exposing (filter, head, tail)
 import Maybe exposing (andThen, withDefault)
 import PostCode.DTO.PostCode exposing (PostCode)
-import String exposing (split)
+import String exposing (isEmpty, split)
 import Url exposing (percentDecode)
-import Url.Parser exposing (Parser, parse, string)
+
+
+
+--import Url.Parser exposing (Parser, parse, string)
 
 
 type alias Model =
@@ -23,6 +27,7 @@ type alias Model =
     }
 
 
+-- TODO: Serve with path base locally
 dropPathBase : Maybe (List String) -> Maybe (List String)
 dropPathBase =
     Maybe.map <| filter (\part -> part /= "post-code-search")
@@ -30,7 +35,14 @@ dropPathBase =
 
 pathToCode : String -> Maybe String
 pathToCode =
-    andThen percentDecode << head << withDefault [] << dropPathBase << tail << split "/"
+    mfilter (\s -> not <| isEmpty s) -- TODO: create isNotEmpty for strings
+        << andThen percentDecode
+        << head
+        << withDefault []
+        << dropPathBase
+        << tail
+        << split "/"
+
 
 
 --initialCode : Url.Url -> Maybe String

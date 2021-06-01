@@ -6256,6 +6256,13 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $author$project$Common$Maybe$mfilter = function (f) {
+	return $elm$core$Maybe$andThen(
+		function (a) {
+			return f(a) ? $elm$core$Maybe$Just(a) : $elm$core$Maybe$Nothing;
+		});
+};
+var $elm$core$Basics$not = _Basics_not;
 var $elm$url$Url$percentDecode = _Url_percentDecode;
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
@@ -6285,7 +6292,13 @@ var $author$project$PostCodeSearch$Model$pathToCode = A2(
 				$elm$core$Basics$composeL,
 				A2(
 					$elm$core$Basics$composeL,
-					$elm$core$Maybe$andThen($elm$url$Url$percentDecode),
+					A2(
+						$elm$core$Basics$composeL,
+						$author$project$Common$Maybe$mfilter(
+							function (s) {
+								return !$elm$core$String$isEmpty(s);
+							}),
+						$elm$core$Maybe$andThen($elm$url$Url$percentDecode)),
 					$elm$core$List$head),
 				$elm$core$Maybe$withDefault(_List_Nil)),
 			$author$project$PostCodeSearch$Model$dropPathBase),
@@ -6352,7 +6365,6 @@ var $author$project$PostCode$Client$getAutocomplete = function (part) {
 		});
 };
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Basics$not = _Basics_not;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
